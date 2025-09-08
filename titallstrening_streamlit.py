@@ -1,6 +1,7 @@
-# Titallstrening – Streamlit
+# Titallstrening – Streamlit (fixed)
 # Kjør med: streamlit run titallstrening_streamlit.py
 import random
+import uuid
 import streamlit as st
 from decimal import Decimal, getcontext
 
@@ -35,7 +36,7 @@ def random_number(difficulty: str) -> Decimal:
         n = Decimal(f"0.{str(frac).zfill(frac_places)}")
     return n
 
-def new_task():
+def build_new_task():
     a = random_number(st.session_state.difficulty)
     op = random.choice(st.session_state.ops)  # '*' or '/'
     f = random.choice(st.session_state.factors)
@@ -47,7 +48,13 @@ def new_task():
         text = f"{fmt(a)} : {fmt(f)} = ?"
     st.session_state.task_text = text
     st.session_state.correct = correct
-    st.session_state['answer'] = ""
+
+def new_task():
+    build_new_task()
+    st.session_state['answer'] = ""  # clear input
+    # trigger a rerun so UI updates immediately
+    st.session_state['_token'] = uuid.uuid4().hex
+    st.rerun()
 
 st.set_page_config(page_title="Titallstrening", page_icon="🧮")
 st.title("Titallstrening – 10, 100, 1000")
@@ -68,6 +75,13 @@ with st.sidebar:
         st.session_state.remaining = qcount
         new_task()
 
+# Init first task and input key
+if "task_text" not in st.session_state:
+    build_new_task()
+if "answer" not in st.session_state:
+    st.session_state['answer'] = ""
+
+# Header metrics
 col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Riktige", st.session_state.get("correct_count", 0))
@@ -78,9 +92,7 @@ with col3:
 
 st.divider()
 
-if "task_text" not in st.session_state:
-    new_task()
-
+# Big task text
 st.markdown(
     f"<div style='font-size:34px; font-weight:700; margin: 10px 0 20px 0;'>{st.session_state.task_text}</div>",
     unsafe_allow_html=True
@@ -103,7 +115,6 @@ with colA:
         except Exception:
             st.warning("Kunne ikke tolke svaret. Bruk tall med komma eller punktum.")
 with colB:
-    if st.button("Ny oppgave", use_container_width=True, key="new_task_btn"):
-        new_task()
+    st.button("Ny oppgave", use_container_width=True, key="new_task_btn", on_click=new_task)
 
 st.caption("Desimaltall vises med komma. Du kan skrive svar med komma eller punktum.")
