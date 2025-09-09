@@ -1,7 +1,6 @@
-# Titallstrening – Streamlit (fixed)
+# Titallstrening – Streamlit (callback without st.rerun)
 # Kjør med: streamlit run titallstrening_streamlit.py
 import random
-import uuid
 import streamlit as st
 from decimal import Decimal, getcontext
 
@@ -52,9 +51,6 @@ def build_new_task():
 def new_task():
     build_new_task()
     st.session_state['answer'] = ""  # clear input
-    # trigger a rerun so UI updates immediately
-    st.session_state['_token'] = uuid.uuid4().hex
-    st.rerun()
 
 st.set_page_config(page_title="Titallstrening", page_icon="🧮")
 st.title("Titallstrening – 10, 100, 1000")
