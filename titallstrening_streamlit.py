@@ -1,5 +1,5 @@
 
-# Titallstrening – Streamlit (stabil Enter uten form/JS: on_change + auto-ny oppgave ved riktig)
+# Titallstrening – Streamlit (fix: suppress on_change after programmatic clears)
 # Kjør: streamlit run titallstrening_streamlit.py
 import random
 from datetime import datetime, timedelta
@@ -89,7 +89,11 @@ def focus_answer_input():
     )
 
 def submit_answer():
-    # Kalles automatisk når innholdet i tekstfeltet endres og elev trykker Enter.
+    # Suppress on_change caused by programmatic clears
+    if st.session_state.get('ignore_change', False):
+        st.session_state['ignore_change'] = False
+        return
+
     s = st.session_state.get('answer', '')
     try:
         u = parse_user(s)
@@ -106,7 +110,7 @@ def submit_answer():
             st.session_state.remaining = max(0, st.session_state.get("remaining", 0) - 1)
             if st.session_state.remaining == 0:
                 st.session_state.finished = True
-        # Auto: kø ny oppgave ved riktig svar
+        # Auto ny oppgave ved riktig svar
         queue_new_task()
     else:
         st.session_state.last_feedback = "wrong"
@@ -140,7 +144,7 @@ with st.sidebar:
 for key, default in [
     ("task_text", None), ("answer", ""), ("finished", False),
     ("correct_count", 0), ("tried", 0), ("last_feedback", None),
-    ("focus_answer", False), ("spawn_new_task", False)
+    ("focus_answer", False), ("spawn_new_task", False), ("ignore_change", False)
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -148,6 +152,7 @@ for key, default in [
 # Prosesser ny oppgave før UI
 if st.session_state.spawn_new_task:
     build_new_task()
+    st.session_state['ignore_change'] = True  # <-- suppress on_change once
     st.session_state.answer = ""
     st.session_state.spawn_new_task = False
     st.session_state.focus_answer = True
