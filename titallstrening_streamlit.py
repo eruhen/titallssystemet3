@@ -19,22 +19,49 @@ def parse_user(s: str) -> Decimal:
     return Decimal(s)
 
 def random_number(difficulty: str) -> Decimal:
-    if difficulty == 'Hele tall':
-        choices = [random.randint(1, 9999), random.choice([10,20,30,40,50,60,70,80,90,100,200,500,1000])]
-        n = Decimal(random.choice(choices))
-    elif difficulty == 'Desimaltall':
-        whole = random.randint(0, 999)
-        frac_places = random.choice([1,2,3])
-        frac = random.randint(1, 9*(10**(frac_places-1)))
-        n = Decimal(f"{whole}.{str(frac).zfill(frac_places)}")
-    else:
-        return random_number(random.choice(['Hele tall','Desimaltall']))
-    if random.random() < 0.2:
-        frac_places = random.choice([1,2,3])
-        frac = random.randint(1, 9*(10**(frac_places-1)))
-        n = Decimal(f"0.{str(frac).zfill(frac_places)}")
-    return n
+    sig = random.choice([1, 2, 3])  # maks 3 gjeldende sifre
 
+    if difficulty == "Hele tall":
+        # Lag et heltall med 1–3 gjeldende sifre
+        first = random.randint(1, 9)
+        if sig == 1:
+            digits = str(first)
+        else:
+            rest = "".join(str(random.randint(0, 9)) for _ in range(sig - 1))
+            digits = str(first) + rest
+
+        # Legg eventuelt til nuller bak for plassverdi-trening
+        trailing_zeros = random.choice([0, 1, 2])
+        n = Decimal(digits + ("0" * trailing_zeros))
+
+    elif difficulty == "Desimaltall":
+        # Lag et desimaltall med 1–3 gjeldende sifre
+        first = str(random.randint(1, 9))
+        if sig == 1:
+            rest = ""
+        else:
+            rest = "".join(str(random.randint(0, 9)) for _ in range(sig - 1))
+
+        all_digits = first + rest
+
+        # Plasser desimaltegnet slik at vi får variasjon:
+        # f.eks. 4,2 / 0,42 / 42,0-lignende strukturer
+        if random.random() < 0.35:
+            # Tall mindre enn 1, f.eks. 0,4 / 0,56 / 0,783
+            n = Decimal(f"0.{all_digits}")
+        else:
+            # Tall større enn eller lik 1
+            if len(all_digits) == 1:
+                n = Decimal(all_digits)
+            else:
+                split = random.randint(1, len(all_digits) - 1)
+                n = Decimal(all_digits[:split] + "." + all_digits[split:])
+
+    else:
+        return random_number(random.choice(["Hele tall", "Desimaltall"]))
+
+    return n
+    
 def build_new_task():
     a = random_number(st.session_state.difficulty)
     op = random.choice(st.session_state.ops)  # '*' or '/'
