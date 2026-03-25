@@ -1,6 +1,3 @@
-
-# Titallstrening – Streamlit (fix: suppress on_change after programmatic clears)
-# Kjør: streamlit run titallstrening_streamlit.py
 import random
 from datetime import datetime, timedelta
 import streamlit as st
@@ -89,11 +86,6 @@ def focus_answer_input():
     )
 
 def submit_answer():
-    # Suppress on_change caused by programmatic clears
-    if st.session_state.get('ignore_change', False):
-        st.session_state['ignore_change'] = False
-        return
-
     s = st.session_state.get('answer', '')
     try:
         u = parse_user(s)
@@ -110,7 +102,6 @@ def submit_answer():
             st.session_state.remaining = max(0, st.session_state.get("remaining", 0) - 1)
             if st.session_state.remaining == 0:
                 st.session_state.finished = True
-        # Auto ny oppgave ved riktig svar
         queue_new_task()
     else:
         st.session_state.last_feedback = "wrong"
@@ -140,19 +131,16 @@ with st.sidebar:
     if st.button("Start/Nullstill økt", key="reset_btn"):
         reset_session()
 
-# Init defaults
 for key, default in [
     ("task_text", None), ("answer", ""), ("finished", False),
     ("correct_count", 0), ("tried", 0), ("last_feedback", None),
-    ("focus_answer", False), ("spawn_new_task", False), ("ignore_change", False)
+    ("focus_answer", False), ("spawn_new_task", False)
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Prosesser ny oppgave før UI
 if st.session_state.spawn_new_task:
     build_new_task()
-    st.session_state['ignore_change'] = True  # <-- suppress on_change once
     st.session_state.answer = ""
     st.session_state.spawn_new_task = False
     st.session_state.focus_answer = True
@@ -160,7 +148,6 @@ if st.session_state.spawn_new_task:
 if st.session_state.task_text is None:
     build_new_task()
 
-# Header metrics
 col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Riktige", st.session_state.get("correct_count", 0))
@@ -177,7 +164,6 @@ with col3:
 
 st.divider()
 
-# Avslutt ved tid/antall
 if st.session_state.mode == "Tid":
     end_ts = st.session_state.get("end_time", None)
     if end_ts is not None and datetime.utcnow().timestamp() >= end_ts:
@@ -198,24 +184,20 @@ if st.session_state.get("finished", False) or (
     st.button("Start ny økt", type="primary", on_click=reset_session, use_container_width=True)
 
 else:
-    # Sist tilbakemelding
     if st.session_state.last_feedback == "correct":
-        st.success("Riktig! ✅")
+        st.success("Rittig! ✅")
     elif st.session_state.last_feedback == "wrong":
         st.error("Feil. Prøv igjen.")
     elif st.session_state.last_feedback == "parse_error":
         st.warning("Kunne ikke tolke svaret. Bruk tall med komma eller punktum.")
 
-    # Oppgavetekst
     st.markdown(
         f"<div style='font-size:34px; font-weight:700; margin: 10px 0 20px 0;'>{st.session_state.task_text}</div>",
         unsafe_allow_html=True
     )
 
-    # Svarfelt: Enter (on_change) = sjekk svar. Ved riktig -> auto ny oppgave.
     st.text_input("Svar (bruk komma eller punktum):", key="answer", on_change=submit_answer)
 
-    # Knapper (mus-støtte)
     colA, colB = st.columns([1,1])
     with colA:
         if st.button("Sjekk svar", type="primary", use_container_width=True, key="check_btn"):
@@ -224,7 +206,6 @@ else:
         if st.button("Ny oppgave", use_container_width=True, key="new_task_btn"):
             queue_new_task()
 
-# Fokus
 if st.session_state.get("focus_answer", False):
     focus_answer_input()
     st.session_state["focus_answer"] = False
