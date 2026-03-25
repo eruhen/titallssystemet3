@@ -212,7 +212,7 @@ if st.session_state.get("finished", False) or (
 
 else:
     if st.session_state.last_feedback == "correct":
-        st.success("Rittig! ✅")
+        st.success("Riktig! ✅")
     elif st.session_state.last_feedback == "wrong":
         st.error("Feil. Prøv igjen.")
     elif st.session_state.last_feedback == "parse_error":
