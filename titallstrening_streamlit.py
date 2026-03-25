@@ -79,6 +79,7 @@ def reset_session():
     st.session_state.finished = False
     st.session_state.last_feedback = None
     st.session_state.focus_answer = True
+    st.session_state.clear_answer = True
 
     mode = st.session_state.get("mode", "Antall oppgaver")
     if mode == "Antall oppgaver":
@@ -131,13 +132,11 @@ def submit_answer(user_input):
         else:
             build_new_task()
 
-        st.session_state.answer = ""
+        st.session_state.clear_answer = True
         st.rerun()
 
     else:
         st.session_state.last_feedback = "wrong"
-
-# --- UI ---
 
 st.set_page_config(page_title="Titallstrening", page_icon="🧮")
 st.title("Titallstrening – 10, 100, 1000")
@@ -151,7 +150,7 @@ with st.sidebar:
     st.session_state.ops = ['*' if o.startswith("Gange") else '/' for o in ops] or ['*', '/']
 
     factors = st.multiselect("Faktorer", ["10", "100", "1000"], default=["10", "100", "1000"])
-    st.session_state.factors = [Decimal(f) for f in factors]
+    st.session_state.factors = [Decimal(f) for f in factors] or FACTORS
 
     st.session_state.difficulty = st.selectbox("Talltype", ["Hele tall", "Desimaltall", "Blandet"])
 
@@ -166,6 +165,7 @@ with st.sidebar:
 
     if st.button("Start/Nullstill"):
         reset_session()
+        st.rerun()
 
 for key, default in [
     ("task_text", None),
@@ -175,13 +175,13 @@ for key, default in [
     ("tried", 0),
     ("last_feedback", None),
     ("spawn_new_task", False),
+    ("clear_answer", False),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
 
 if st.session_state.spawn_new_task:
     build_new_task()
-    st.session_state.answer = ""
     st.session_state.spawn_new_task = False
 
 if st.session_state.task_text is None:
@@ -192,7 +192,15 @@ st.metric("Forsøk", st.session_state.tried)
 
 st.divider()
 
-if st.session_state.finished:
+if st.session_state.mode == "Tid":
+    end_ts = st.session_state.get("end_time", None)
+    if end_ts is not None and datetime.utcnow().timestamp() >= end_ts:
+        st.session_state.finished = True
+
+if st.session_state.finished or (
+    st.session_state.mode == "Antall oppgaver" and st.session_state.get("remaining", 0) == 0
+):
+    st.session_state.finished = True
     st.success("Økten er ferdig!")
 else:
     if st.session_state.last_feedback == "correct":
@@ -204,7 +212,10 @@ else:
 
     st.markdown(f"## {st.session_state.task_text}")
 
-    # 👇 HER ER DEN VIKTIGE ENDRINGEN
+    if st.session_state.get("clear_answer", False):
+        st.session_state["answer"] = ""
+        st.session_state["clear_answer"] = False
+
     with st.form("answer_form"):
         user_input = st.text_input("Svar:", key="answer")
         submitted = st.form_submit_button("Sjekk svar")
@@ -214,7 +225,7 @@ else:
 
     if st.button("Ny oppgave"):
         build_new_task()
-        st.session_state.answer = ""
+        st.session_state.clear_answer = True
         st.rerun()
 
     focus_answer_input()
