@@ -139,6 +139,38 @@ def submit_answer(user_input):
         st.session_state.last_feedback = "wrong"
 
 st.set_page_config(page_title="Titallstrening", page_icon="🧮")
+
+st.markdown("""
+<style>
+/* Mindre luft øverst på siden */
+.block-container {
+    padding-top: 1.2rem;
+    padding-bottom: 1rem;
+}
+
+/* Litt smalere avstand mellom elementer */
+div[data-testid="stVerticalBlock"] {
+    gap: 0.5rem;
+}
+
+/* Gjør metrics litt mer kompakte */
+div[data-testid="metric-container"] {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+}
+
+/* Mindre luft rundt overskrifter */
+h1 {
+    margin-bottom: 0.3rem;
+}
+
+h2, h3 {
+    margin-top: 0.2rem;
+    margin-bottom: 0.4rem;
+}
+</style>
+""", unsafe_allow_html=True)
+
 st.title("Titallstrening – 10, 100, 1000")
 
 with st.sidebar:
@@ -187,8 +219,21 @@ if st.session_state.spawn_new_task:
 if st.session_state.task_text is None:
     build_new_task()
 
-st.metric("Riktige", st.session_state.correct_count)
-st.metric("Forsøk", st.session_state.tried)
+st.markdown("<h1 style='font-size: 2.4rem;'>Titallstrening – 10, 100, 1000</h1>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Riktige", st.session_state.correct_count)
+with col2:
+    st.metric("Forsøk", st.session_state.tried)
+with col3:
+    if st.session_state.mode == "Antall oppgaver":
+        st.metric("Igjen", st.session_state.get("remaining", 0))
+    else:
+        end_ts = st.session_state.get("end_time", None)
+        tl = max(0, int(end_ts - datetime.utcnow().timestamp())) if end_ts else 0
+        m, s = divmod(tl, 60)
+        st.metric("Tid igjen", f"{m:02d}:{s:02d}")
 
 st.divider()
 
