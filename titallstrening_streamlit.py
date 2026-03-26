@@ -171,8 +171,6 @@ h2, h3 {
 </style>
 """, unsafe_allow_html=True)
 
-st.title("Titallstrening – 10, 100, 1000")
-
 with st.sidebar:
     st.header("Innstillinger")
 
