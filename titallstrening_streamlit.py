@@ -16,14 +16,13 @@ st.set_page_config(
 # --- CSS ---
 st.markdown("""
 <style>
-
-/* Litt mer luft øverst (viktig!) */
+/* Litt mindre luft øverst, men ikke så lite at tittelen kuttes */
 .block-container {
-    padding-top: 2rem;
+    padding-top: 1.8rem;
     padding-bottom: 1rem;
 }
 
-/* Kompakt spacing ellers */
+/* Tettere avstand mellom elementer ellers */
 div[data-testid="stVerticalBlock"] {
     gap: 0.45rem;
 }
@@ -34,15 +33,15 @@ div[data-testid="metric-container"] {
     padding-bottom: 0.15rem;
 }
 
-/* FIKS: sørg for at tittelen ikke blir kuttet */
+/* La Streamlit håndtere tittelen, vi justerer bare størrelse og margin */
 h1 {
+    font-size: 2.2rem !important;
+    line-height: 1.2 !important;
     margin-top: 0 !important;
     margin-bottom: 0.5rem !important;
-    line-height: 1.3 !important;
-    padding-top: 0.2rem !important;
 }
 
-/* Større inputfelt */
+/* Større tekst i inputfeltet */
 input[type="text"] {
     font-size: 1.8rem !important;
     text-align: center;
@@ -52,7 +51,6 @@ input[type="text"] {
 input::placeholder {
     font-size: 1.2rem;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -225,10 +223,7 @@ with st.sidebar:
         st.rerun()
 
 # --- HEADER ---
-st.markdown(
-    "<h1 style='font-size:2.3rem; line-height:1.2; margin:0;'>Titallstrening</h1>",
-    unsafe_allow_html=True
-)
+st.title("Titallstrening")
 
 col1, col2, col3 = st.columns(3)
 with col1:
