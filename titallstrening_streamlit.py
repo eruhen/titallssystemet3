@@ -217,7 +217,7 @@ if st.session_state.spawn_new_task:
 if st.session_state.task_text is None:
     build_new_task()
 
-st.markdown("<h1 style='font-size: 2.4rem;'>Titallstrening – 10, 100, 1000</h1>", unsafe_allow_html=True)
+st.title("Titallstrening – 10, 100, 1000")
 
 col1, col2, col3 = st.columns(3)
 with col1:
