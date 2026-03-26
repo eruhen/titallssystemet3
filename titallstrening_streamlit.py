@@ -16,26 +16,33 @@ st.set_page_config(
 # --- CSS ---
 st.markdown("""
 <style>
+
+/* Litt mer luft øverst (viktig!) */
 .block-container {
-    padding-top: 1rem;
+    padding-top: 2rem;
     padding-bottom: 1rem;
 }
 
+/* Kompakt spacing ellers */
 div[data-testid="stVerticalBlock"] {
     gap: 0.45rem;
 }
 
+/* Kompakte metrikker */
 div[data-testid="metric-container"] {
     padding-top: 0.15rem;
     padding-bottom: 0.15rem;
 }
 
+/* FIKS: sørg for at tittelen ikke blir kuttet */
 h1 {
-    margin: 0 0 0.4rem 0 !important;
-    line-height: 1.2 !important;
-    padding: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0.5rem !important;
+    line-height: 1.3 !important;
+    padding-top: 0.2rem !important;
 }
 
+/* Større inputfelt */
 input[type="text"] {
     font-size: 1.8rem !important;
     text-align: center;
@@ -45,6 +52,7 @@ input[type="text"] {
 input::placeholder {
     font-size: 1.2rem;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
